@@ -665,7 +665,7 @@ void *client_thread(void *p)
 
 	else if(client->sock->total_read == 0)
 		clientlog(client, "no data");
-	// http://alice.pnzgu.ru:8080/~zsa/sql/tcpip/adv16.htm
+
 	if(client->sock->sock >= 0)
 #ifndef WIN32
 		shutdown(client->sock->sock, SHUT_RDWR);
