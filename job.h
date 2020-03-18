@@ -42,6 +42,7 @@ struct YAAMP_JOB_TEMPLATE
 	char extradata_be[512];
 
 	char mr_hex[512];
+	char seed[64];
 
 	// todo: can use extra field
 	char claim_hex[128];

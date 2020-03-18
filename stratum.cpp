@@ -178,9 +178,7 @@ YAAMP_ALGO g_algos[] =
 	{"penta", penta_hash, 1, 0, 0},
 	{"rainforest", rainforest_hash, 0x100, 0, 0},
 	{"skein2", skein2_hash, 1, 0, 0},
-	{"yescrypt", yescrypt_hash, 0x10000, 0, 0},
-	{"yescryptR16", yescryptR16_hash, 0x10000, 0, 0 },
-	{"yescryptR32", yescryptR32_hash, 0x10000, 0, 0 },
+    {"yespower", yespower_hash, 0x10000, 0, 0},
 	{"zr5", zr5_hash, 1, 0, 0},
 
 	{"a5a", a5a_hash, 0x10000, 0, 0},
@@ -202,6 +200,7 @@ YAAMP_ALGO g_algos[] =
 	{"whirlcoin", whirlpool_hash, 1, 0, sha256_hash_hex }, /* old sha merkleroot */
 	{"whirlpool", whirlpool_hash, 1, 0 }, /* sha256d merkleroot */
 	{"whirlpoolx", whirlpoolx_hash, 1, 0, 0},
+        {"randomx", randomx_hash, 0x100, 0, 0}, 
 #endif // !WIN32
 	{"", NULL, 0, 0},
 };
@@ -357,6 +356,8 @@ int main(int argc, char **argv)
 	pthread_t thread2;
 	pthread_create(&thread2, NULL, stratum_thread, NULL);
 
+    printf("initializing randomx vm...");
+	randomx_init();
 	sleep(20);
 
 	while(!g_exiting)
@@ -412,30 +413,30 @@ int main(int argc, char **argv)
 
 void *monitor_thread(void *p)
 {
+	int cacheHeight = 0;
+
 	while(!g_exiting)
 	{
-		sleep(120);
+		sleep(0.2);
 
-		if(g_last_broadcasted + YAAMP_MAXJOBDELAY < time(NULL))
+		g_list_coind.Enter();
+		for(CLI li = g_list_coind.first; li; li = li->next)
 		{
-			g_exiting = true;
-			stratumlogdate("%s dead lock, exiting...\n", g_stratum_algo);
-			exit(1);
-		}
+			YAAMP_COIND *coind = (YAAMP_COIND *)li->data;
+			json_value *json = rpc_call(&coind->rpc, "getblockcount");
+			if (!json) continue;
+			json_int_t amount = json_get_int(json, "result");
 
-		if(g_max_shares && g_shares_counter) {
-
-			if((g_shares_counter - g_shares_log) > 10000) {
-				stratumlogdate("%s %luK shares...\n", g_stratum_algo, (g_shares_counter/1000u));
-				g_shares_log = g_shares_counter;
-			}
-
-			if(g_shares_counter > g_max_shares) {
-				g_exiting = true;
-				stratumlogdate("%s need a restart (%lu shares), exiting...\n", g_stratum_algo, (unsigned long) g_max_shares);
-				exit(1);
+			if (coind->height != amount) {
+                                if (coind->height != cacheHeight) {
+				      debuglog("coind->height differs from rpc response, forcing new template (%d vs %d)..\n", coind->height, amount);
+                                      cacheHeight = coind->height;
+                                }
+				coind_create_job(coind, true);
+				job_update();
 			}
 		}
+		g_list_coind.Leave();
 	}
 }
 

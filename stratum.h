@@ -134,6 +134,7 @@ extern pthread_mutex_t g_job_create_mutex;
 
 extern volatile bool g_exiting;
 
+#include "randomx.h"
 #include "db.h"
 #include "object.h"
 #include "socket.h"
@@ -228,7 +229,7 @@ void sha256_double_hash_hex(const char* input, char* output, unsigned int len);
 #include "algos/whirlpool.h"
 #include "algos/whirlpoolx.h"
 #include "algos/skein2.h"
-#include "algos/yescrypt.h"
+#include "algos/yespower/yespower.h"
 #include "algos/zr5.h"
 #include "algos/hive.h"
 #include "algos/sib.h"

@@ -1,4 +1,3 @@
-
 #include "stratum.h"
 
 uint64_t lyra2z_height = 0;
@@ -234,6 +233,12 @@ static void client_do_submit(YAAMP_CLIENT *client, YAAMP_JOB *job, YAAMP_JOB_VAL
             hash_int    = diff_to_target(target_to_diff_equi((uint32_t *)submitvalues->hash_bin));
             coin_target = diff_to_target(nbits_to_diff_equi(&bits));
         }
+
+if (g_current_algo->name && !strcmp(g_current_algo->name,"randomx")) 
+        {
+uint64_t hash_int = * (uint64_t *) &submitvalues->hash_bin[24];
+        uint64_t coin_target = decode_compact(templ->nbits) / 0x10000;
+}
     else
         {
 		uint64_t hash_int = get_hash_difficulty(submitvalues->hash_bin);	
@@ -356,6 +361,7 @@ static void client_do_submit(YAAMP_CLIENT *client, YAAMP_JOB *job, YAAMP_JOB_VAL
 				snprintf(block_hex, block_size, "%s", hex);
 		}
 
+	debuglog("debugblockhex: %s\n", block_hex);
 		// std::cerr << "Block hex: " << block_hex << std::endl;
 		bool b = coind_submit(coind, block_hex);
 		if(b)
@@ -501,7 +507,7 @@ bool client_submit(YAAMP_CLIENT *client, json_value *json_params)
 	string_lower(nonce);
 
 	if (json_params->u.array.length == 6) {
-		if (strstr(g_stratum_algo, "phi")) {
+		if (strstr(g_stratum_algo, "randomx")) {
 			// lux optional field, smart contral root hashes (not mandatory on shares submit)
 			strncpy(extra, json_params->u.array.values[5]->u.string.ptr, 128);
 			string_lower(extra);
@@ -607,6 +613,22 @@ bool client_submit(YAAMP_CLIENT *client, json_value *json_params)
 
 	if (templ->height && !strcmp(g_current_algo->name,"lyra2z")) {
 		lyra2z_height = templ->height;
+	}
+
+	if (templ->height && !strcmp(g_current_algo->name,"randomx")) {
+		        uint64_t hash_int = * (uint64_t *) &submitvalues.hash_bin[24];
+        uint64_t user_target = share_to_target(client->difficulty_actual) * g_current_algo->diff_multiplier;
+        uint64_t coin_target = decode_compact(templ->nbits) / 0x10000;
+        debuglog("\n");
+        debuglog("hash %016lx \n", hash_int);
+        debuglog("shar %016lx \n", user_target);
+        debuglog("coin %016lx \n", coin_target);
+
+        if(hash_int > user_target)
+        {
+                client_submit_error(client, job, 26, "Low difficulty share", extranonce2, ntime, nonce);
+                return true;
+        }
 	}
 
 	// minimum hash diff begins with 0000, for all...

@@ -158,6 +158,6 @@ static inline uint32_t bswap32(uint32_t x) {
 (((x) & 0x00ff0000) >> 8) | \
 (((x) & 0xff000000) >> 24))
 #endif // !WIN32
-
+uint64_t share_to_target(double diff);
 
 #endif // !_UTIL_H

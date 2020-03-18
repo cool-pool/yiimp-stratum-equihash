@@ -341,6 +341,9 @@ YAAMP_JOB_TEMPLATE *coind_create_template(YAAMP_COIND *coind)
 
 	strcpy(templ->flags, flags ? flags : "");
 	strcpy(templ->priceinfo, "");
+        const char *seed = json_get_string(json_result, "seed");
+        strcpy(templ->seed, seed ? seed : "");
+        ser_string_be2(seed, &templ->seed[ 0], 8);
 
 	// LBC Claim Tree (with wallet gbt patch)
 	const char *claim = json_get_string(json_result, "claimtrie");
