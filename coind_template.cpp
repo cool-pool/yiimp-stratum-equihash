@@ -389,9 +389,16 @@ YAAMP_JOB_TEMPLATE *coind_create_template(YAAMP_COIND *coind)
 		ser_string_be2(sc_utxo, &templ->extradata_be[64], 8);
 	}
 
-	if (strcmp(coind->rpcencoding, "DCR") == 0) {
-		decred_fix_template(coind, templ, json_result);
-	}
+        ///////////////////////////////////////////////////////////////////////////veil////
+        strcpy(templ->veil_pofn,json_get_string(json_result, "proofoffullnodehash"));
+       	json_value *json_accumhashes = json_get_array(json_result, "accumulatorhashes");
+        if(json_accumhashes) {
+              	strcpy(templ->veil_accum10,json_get_string(json_accumhashes,"10"));
+                strcpy(templ->veil_accum100,json_get_string(json_accumhashes,"100"));
+                strcpy(templ->veil_accum1000,json_get_string(json_accumhashes,"1000"));
+                strcpy(templ->veil_accum10000,json_get_string(json_accumhashes,"10000"));
+        }
+        ////veil//////////////////////////////////////////////////////////////////////////
 
 	if (!templ->height || !templ->nbits || !strlen(templ->prevhash_hex)) {
 		stratumlog("%s warning, gbt incorrect : version=%s height=%d value=%d bits=%s time=%s prev=%s\n",
@@ -669,7 +676,7 @@ bool coind_create_job(YAAMP_COIND *coind, bool force)
 
 	YAAMP_JOB *job_last = coind->job;
 
-	if(	!force && job_last && job_last->templ && job_last->templ->created + 45 > time(NULL) &&
+	if(	!force && job_last && job_last->templ && job_last->templ->created + 25 > time(NULL) &&
 		templ->height == job_last->templ->height &&
 		templ->txcount == job_last->templ->txcount &&
 		strcmp(templ->coinb2, job_last->templ->coinb2) == 0)

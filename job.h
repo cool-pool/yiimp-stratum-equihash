@@ -24,7 +24,7 @@ struct YAAMP_JOB_VALUES
 	char header[EQUI_HEADER_SIZE * 2 + 1];      // +1 bcz of `/0`
 	char header_be[EQUI_HEADER_SIZE * 2 + 1];   // +1 bcz of `/0`
 	unsigned char header_bin[EQUI_HEADER_SIZE];
-
+	char veilblock[1024];
 	char hash_hex[1024];
 	char hash_be[1024];
 	unsigned char hash_bin[1024];
@@ -77,6 +77,12 @@ struct YAAMP_JOB_TEMPLATE
 
 	bool has_filtered_txs;
 	int filtered_txs_fee;
+
+	char veil_accum10[128];
+	char veil_accum100[128];
+	char veil_accum1000[128];
+	char veil_accum10000[128];
+	char veil_pofn[128];
 
 	int auxs_size;
 	YAAMP_COIND_AUX* auxs[MAX_AUXS];

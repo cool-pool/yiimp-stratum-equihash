@@ -4,6 +4,7 @@
 #include <sys/time.h>
 #ifndef WIN32
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <sys/resource.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -184,6 +185,7 @@ void sha256_double_hash_hex(const char* input, char* output, unsigned int len);
 #include "algos/x14.h"
 #include "algos/x15.h"
 #include "algos/x16r.h"
+#include "algos/x16rt.h"
 #include "algos/x16rv2.h"
 #include "algos/x16s.h"
 #include "algos/x17.h"
