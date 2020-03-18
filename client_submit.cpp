@@ -301,7 +301,9 @@ uint64_t hash_int = * (uint64_t *) &submitvalues->hash_bin[24];
 		}
 	}
 
-	if(hash_int <= coin_target)
+		double coin_diff = target_to_diff(coin_target);
+        double share_diff = target_to_diff(hash_int);
+        if(share_diff > coin_diff)
 	{
         // adding transactions to block
 		char count_hex[8] = { 0 };
@@ -594,13 +596,17 @@ bool client_submit(YAAMP_CLIENT *client, json_value *json_params)
 	}
 
 	if (templ->height && !strcmp(g_current_algo->name,"randomx")) {
-		        uint64_t hash_int = * (uint64_t *) &submitvalues.hash_bin[24];
+		uint64_t hash_int = * (uint64_t *) &submitvalues.hash_bin[24];
         uint64_t user_target = share_to_target(client->difficulty_actual) * g_current_algo->diff_multiplier;
-        uint64_t coin_target = decode_compact(templ->nbits) / 0x10000;
+
+        uint64_t coin_target = decode_compact(templ->nbits);
+        if (templ->nbits && !coin_target) coin_target = 0xFFFF000000000000ULL; // under decode_compact min diff
+        double coin_diff = target_to_diff(coin_target);
+        double share_diff = target_to_diff(hash_int);
+
         debuglog("\n");
-        debuglog("hash %016lx \n", hash_int);
-        debuglog("shar %016lx \n", user_target);
-        debuglog("coin %016lx \n", coin_target);
+        debuglog("hash %016llx \n", hash_int);
+        debuglog("shar %016llx \n", user_target);
 
         if(hash_int > user_target)
         {
